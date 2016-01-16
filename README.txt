@@ -9,3 +9,9 @@
    http://brettbeauregard.com/blog/2011/04/improving-the-beginners-pid-introduction/
 
  - For function documentation see:  http://playground.arduino.cc/Code/PIDLibrary
+
+
+ * Adapted for VEX ROBOT-C by Brian Pratt <brianstephenspratt@gmail.com>
+ * Assumes that we're controlling RPM using a quad encoder
+ * N.B. could be further simplified but left a lot alone for ease of 
+ * tracking any developments in the Arduino code

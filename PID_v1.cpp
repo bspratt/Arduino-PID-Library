@@ -3,9 +3,7 @@
  * by Brett Beauregard <br3ttb@gmail.com> brettbeauregard.com
  *
  * Adapted for ROBOT-C by Brian Pratt <brianstephenspratt@gmail.com>
- * Assumes that we're controlling RPM using a quad encoder
- * N.B. could be further simplified but left a lot alone for ease of tracking
- * developments in the Arduino code
+ * Assumes that we're controlling rotation speed using a quad encoder
  *
  * This Library is licensed under a GPLv3 License
  **********************************************************************************************/
@@ -16,13 +14,19 @@
  *    The parameters specified here are those for for which we can't set up
  *    reliable defaults, so we need to have the user set them.
  ***************************************************************************/
-void PID(int InputPort, int *OutputPorts, int nOutputPorts, float Setpoint,
-        float Kp, float Ki, float Kd, int ControllerDirection)
+void PID(tSensors InputSensor, tMotor *OutputPorts,  bool *OutputsReversed, int nOutputPorts, double Setpoint,
+        double Kp, double Ki, double Kd, int ControllerDirection)
 {
-
+    // pragmas and include files still don't work well in ROBOT-C, set it manuually
     myOutputPorts = OutputPorts;
+    for (int i = nOutputPorts; i-- > 0;)
+    {
+    	bMotorReflected[myOutputPorts[i]] = OutputsReversed[i];
+    	motorType[myOutputPorts[i]] = tmotorVex393_HBridge;
+    }
     myOutputPortCount = nOutputPorts;
-    myInputPort = InputPort;
+    myInputSensor = InputSensor;
+    SensorType[myInputSensor] = sensorQuadEncoder;
     mySetpoint = &_setpoint;
     *mySetpoint = Setpoint;
 	  inAuto = true;
@@ -37,11 +41,11 @@ void PID(int InputPort, int *OutputPorts, int nOutputPorts, float Setpoint,
 
     lastTime = millis()-SampleTime;
 
-    // start the PID task
-    StartTask( pidController );
+    // start the PID task at high priority
+    startTask( pidController, kHighPriority );
 }
 
-  // Arduino-style lock check
+  // Arduino-style clock check
 	unsigned long millis()
 	{
 		return nPgmTime;
@@ -62,13 +66,13 @@ task pidController()
 		if (output != lastOutput)
 		{
 			lastOutput = output;
-			for (int i=myOutputPortCount; i-- > 0;)
+			for (int i=myOutputPortCount; i-- > 0;) // Set each of the motors
 			{
 				motor[myOutputPorts[i]] = output;
 			}
 		}
 		// Let other tasks have a go
-		endTimeSlice();
+		EndTimeSlice();
 	}
 }
 
@@ -96,19 +100,17 @@ bool Compute()
    if(timeChange>=SampleTime)
    {
       /*Compute all the working error variables*/
-      		// Read the encoder
-	    float input = (float)SensorValue[myInputPort] / (float)timeChange;
-	    if(controllerDirection ==REVERSE)
-	    	input = -input;
-	    *myInput = input;
-      float error = *mySetpoint - input;
+      // Read the encoder
+      double input = (float)SensorValue[myInputSensor] / (float)timeChange;
+      *myInput = input;
+      double error = *mySetpoint - input;
       ITerm+= (ki * error);
       if(ITerm > outMax) ITerm= outMax;
       else if(ITerm < outMin) ITerm= outMin;
-      float dInput = (input - lastInput);
+      double dInput = (input - lastInput);
 
       /*Compute PID Output*/
-      float output = kp * error + ITerm- kd * dInput;
+      double output = kp * error + ITerm- kd * dInput;
 
 	  if(output > outMax) output = outMax;
       else if(output < outMin) output = outMin;
@@ -118,7 +120,7 @@ bool Compute()
       lastInput = input;
       lastTime = now;
       // reset encoder count
-      SensorValue[myInputPort] = 0;
+      SensorValue[myInputSensor] = 0;
       lastError = error;
 	  return true;
    }
@@ -131,25 +133,23 @@ bool Compute()
  * it's called automatically from the constructor, but tunings can also
  * be adjusted on the fly during normal operation
  ******************************************************************************/
-void SetTunings(float Kp, float Ki, float Kd)
+void SetTunings(double Kp, double Ki, double Kd)
 {
    if (Kp<0 || Ki<0 || Kd<0) return;
 
    dispKp = Kp; dispKi = Ki; dispKd = Kd;
 
-   float SampleTimeInSec = ((float)SampleTime)/1000;
+   double SampleTimeInSec = ((float)SampleTime)/1000.0;
    kp = Kp;
    ki = Ki * SampleTimeInSec;
    kd = Kd / SampleTimeInSec;
 
-   /* handle this at encoder read instead
   if(controllerDirection == REVERSE)
    {
       kp = (0 - kp);
       ki = (0 - ki);
       kd = (0 - kd);
    }
-   */
 }
 
 /* SetSampleTime(...) *********************************************************
@@ -159,7 +159,7 @@ void SetSampleTime(int NewSampleTime)
 {
    if (NewSampleTime > 0)
    {
-      float ratio  = (float)NewSampleTime
+      double ratio  = (float)NewSampleTime
                       / (float)SampleTime;
       ki *= ratio;
       kd /= ratio;
@@ -175,7 +175,7 @@ void SetSampleTime(int NewSampleTime)
  *  want to clamp it from 0-125.  who knows.  at any rate, that can all be done
  *  here.
  **************************************************************************/
-void SetOutputLimits(float Min, float Max)
+void SetOutputLimits(double Min, double Max)
 {
    if(Min >= Max) return;
    outMin = Min;
@@ -226,14 +226,12 @@ void Initialize()
  ******************************************************************************/
 void SetControllerDirection(int Direction)
 {
-	/* handle this at encoder read
    if(inAuto && Direction !=controllerDirection)
    {
 	  kp = (0 - kp);
       ki = (0 - ki);
       kd = (0 - kd);
    }
-   */
    controllerDirection = Direction;
 }
 
@@ -242,8 +240,8 @@ void SetControllerDirection(int Direction)
  * functions query the internal state of the PID.  they're here for display
  * purposes.  this are the functions the PID Front-end uses for example
  ******************************************************************************/
-float GetKp(){ return  dispKp; }
-float GetKi(){ return  dispKi;}
-float GetKd(){ return  dispKd;}
+double GetKp(){ return  dispKp; }
+double GetKi(){ return  dispKi;}
+double GetKd(){ return  dispKd;}
 int GetMode(){ return  inAuto ? AUTOMATIC : MANUAL;}
 int GetDirection(){ return controllerDirection;}

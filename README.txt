@@ -1,3 +1,5 @@
+THIS IS NOT THE OFFICIAL CODE!!! THIS IS A PORT TO ROBOT-C FOR VEX CORTEX - SEE BELOW
+
 ***************************************************************
 * Arduino PID Library - Version 1.1.1
 * by Brett Beauregard <br3ttb@gmail.com> brettbeauregard.com
@@ -12,6 +14,7 @@
 
 
  * Adapted for VEX ROBOT-C by Brian Pratt <brianstephenspratt@gmail.com>
- * Assumes that we're controlling RPM using a quad encoder
+ * Assumes that we're controlling rotation speed using a quad encoder
  * N.B. could be further simplified but left a lot alone for ease of 
- * tracking any developments in the Arduino code
+ * tracking any developments in the Arduino code, especially the use
+ * of doubles which makes ROBOT-C issue a raft of warnings.

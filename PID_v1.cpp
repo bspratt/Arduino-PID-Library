@@ -100,6 +100,7 @@ bool Compute()
 	    float input = (float)SensorValue[myInputPort] / (float)timeChange;
 	    if(controllerDirection ==REVERSE)
 	    	input = -input;
+	    *myInput = input;
       float error = *mySetpoint - input;
       ITerm+= (ki * error);
       if(ITerm > outMax) ITerm= outMax;

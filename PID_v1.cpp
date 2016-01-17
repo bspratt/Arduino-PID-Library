@@ -2,7 +2,7 @@
  * Arduino PID Library - Version 1.1.1
  * by Brett Beauregard <br3ttb@gmail.com> brettbeauregard.com
  *
- * Adapted for ROBOT-C by Brian Pratt <brianstephenspratt@gmail.com>
+ * Adapted for ROBOTC by Brian Pratt <brianstephenspratt@gmail.com>
  * Assumes that we're controlling rotation speed using a quad encoder
  *
  * This Library is licensed under a GPLv3 License
@@ -17,7 +17,7 @@
 void PID(tSensors InputSensor, tMotor *OutputPorts,  bool *OutputsReversed, int nOutputPorts, double Setpoint,
         double Kp, double Ki, double Kd, int ControllerDirection)
 {
-    // pragmas and include files still don't work well in ROBOT-C, set it manuually
+    // pragmas and include files still don't work well in ROBOTC, set it manuually
     myOutputPorts = OutputPorts;
     for (int i = nOutputPorts; i-- > 0;)
     {

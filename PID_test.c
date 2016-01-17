@@ -1,6 +1,6 @@
-/* proof of concept exerciser for ROBOT-C port of Arduino PID library */
+/* proof of concept exerciser for ROBOTC port of Arduino PID library */
 
-#include <PID_v1.cpp> // ROBOT-C port of Arduino PID library
+#include <PID_v1.cpp> // ROBOTC port of Arduino PID library
 
 #include <MyPIDSetup.cpp> // Tweak the contents of the include file to suit your hardware
 

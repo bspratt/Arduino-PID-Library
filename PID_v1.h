@@ -2,7 +2,7 @@
  * Arduino PID Library - Version 1.1.1
  * by Brett Beauregard <br3ttb@gmail.com> brettbeauregard.com
  *
- * Adapted for ROBOT-C by Brian Pratt <brianstephenspratt@gmail.com>
+ * Adapted for ROBOTC by Brian Pratt <brianstephenspratt@gmail.com>
  * Assumes that we're controlling RPM using a quad encoder
  * N.B. could be further simplified but left a lot alone for ease of tracking
  * developments in the Arduino code
@@ -82,7 +82,7 @@
 	bool inAuto;
 
 	///
-	/// Stuff added for ROBOT-C/VEX use
+	/// Stuff added for ROBOTC/VEX use
 	///
 	void ChangeSetpoint(int delta);
 	void SetSetpoint(int setpoint);
